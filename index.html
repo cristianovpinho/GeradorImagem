@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Montagem de Imagem</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+    }
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      max-width: 100%;
+    }
+    input, button {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Monte sua imagem personalizada</h1>
+  <input type="file" id="userImage" accept="image/*" />
+  <br />
+  <button id="downloadBtn" disabled>Baixar Imagem Final</button>
+  <br />
+  <canvas id="canvas" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    const template = new Image();
+    template.src = 'template.png'; // Substitua com o caminho correto
+    let templateLoaded = false;
+    let userImgLoaded = false;
+
+    let userImg = new Image();
+
+    template.onload = () => {
+      templateLoaded = true;
+      tryRender();
+    };
+
+    document.getElementById('userImage').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        userImg.src = evt.target.result;
+        userImg.onload = () => {
+          userImgLoaded = true;
+          tryRender();
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function tryRender() {
+      if (templateLoaded && userImgLoaded) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(userImg, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
+        downloadBtn.disabled = false;
+      }
+    }
+
+    downloadBtn.addEventListener('click', function() {
+      const link = document.createElement('a');
+      link.download = 'imagem_final.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  </script>
+</body>
+</html>
